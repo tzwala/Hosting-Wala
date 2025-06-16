@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian 3D Radio</title>
+
+    <style>
+        /* CSS is identical, but styles for removed dropdowns are now unused */
+        html { box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #1a1a2e; color: #fff; overflow: hidden; cursor: grab; }
+        .background-shapes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.7; }
+        .shape1 { width: 400px; height: 400px; background: #ff9933; /* Saffron */ top: -150px; left: -150px; animation: move 25s infinite alternate; }
+        .shape2 { width: 500px; height: 500px; background: #138808; /* Green */ bottom: -200px; right: -200px; animation: move 30s infinite alternate-reverse; }
+        @keyframes move { from { transform: translate(0, 0) scale(1); } to { transform: translate(40vw, -30vh) scale(1.2); } }
+        .glass-container { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); padding: 20px; }
+        
+        /* UPDATED: Simplified controls section */
+        .radio-controls { text-align: center; display: flex; flex-direction: column; gap: 15px; }
+        .app-title { font-size: 20px; font-weight: bold; margin: 0; color: #fff; text-shadow: 0 0 5px #ff9933; }
+        .status-message { font-size: 12px; height: 15px; color: #ccc; font-style: italic; margin-top: 5px; }
+
+        .scene { width: 300px; height: 200px; perspective: 1200px; }
+        .radio { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transform: rotateX(-20deg) rotateY(-30deg); transition: transform 0.05s linear; }
+        .face { position: absolute; box-sizing: border-box; background: linear-gradient(to right, #434343 0%, black 100%); border: 1px solid #666; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+        .back { background: #111; }
+        .front, .back { width: 300px; height: 200px; } .left, .right { width: 100px; height: 200px; left: 100px; } .top, .bottom { width: 300px; height: 100px; top: 50px; }
+        .front  { transform: translateZ(50px); } .back   { transform: rotateY(180deg) translateZ(50px); } .right  { transform: rotateY(90deg) translateZ(150px); } .left   { transform: rotateY(-90deg) translateZ(150px); } .top    { transform: rotateX(90deg) translateZ(100px); } .bottom { transform: rotateX(-90deg) translateZ(100px); }
+        .front { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .antenna { position: absolute; width: 5px; height: 150px; background: #aaa; border-radius: 3px; top: -155px; left: 20px; transform-origin: bottom center; transform: rotateZ(15deg); border: 1px solid #777; } .antenna::after { content: ''; position: absolute; width: 8px; height: 8px; background: #888; border-radius: 50%; top: -4px; left: -1.5px; }
+        .brand { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: bold; color: #999; align-self: flex-start; }
+        .speaker-grille { width: 100px; height: 100px; background-image: radial-gradient(circle, #aaa 1px, transparent 1.5px); background-size: 5px 5px; background-color: #1a1a1a; border-radius: 5px; border: 1px solid #555; position: absolute; right: 20px; top: 20px; }
+        .digital-display { width: 140px; height: 60px; background: #050505; border-radius: 4px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); position: absolute; left: 20px; top: 40px; padding: 8px; font-family: 'Orbitron', 'Courier New', monospace; color: #00c6ff; transition: text-shadow 0.4s; }
+        .digital-display.on { text-shadow: 0 0 2px #fff, 0 0 5px #00c6ff, 0 0 10px #00c6ff; }
+        .station-name { font-size: 14px; height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .station-freq { font-size: 16px; font-weight: bold; margin-top: 5px; }
+        .knob-area { display: flex; justify-content: space-around; width: 100%; margin-top: auto; }
+        .knob { width: 45px; height: 45px; background: linear-gradient(145deg, #777, #222); border-radius: 50%; border: 2px solid #111; box-shadow: 0 3px 5px rgba(0,0,0,0.4); position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .knob label { font-size: 10px; font-weight: bold; color: #aaa; position: absolute; bottom: -15px; }
+        .knob-marker { width: 5px; height: 5px; background: #00c6ff; border-radius: 50%; position: absolute; top: 6px; box-shadow: 0 0 2px #fff, 0 0 5px #00c6ff, 0 0 8px #00c6ff; }
+        .responsive-styles { width: 90vw; max-width: 420px; } .main-content { display: flex; flex-direction: column; align-items: center; } .scene-container { margin-top: 30px; transform: scale(0.85); } @media (min-width: 768px) { .responsive-styles { width: 90vw; max-width: 800px; padding: 40px; } .main-content { flex-direction: row; align-items: center; gap: 40px; } .radio-controls { flex: 1; text-align: left; } .app-title { text-align: left; } .scene-container { flex: 1.5; margin-top: 0; transform: scale(1.0); } }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-shapes"><div class="shape shape1"></div><div class="shape shape2"></div></div>
+    <div class="glass-container responsive-styles">
+        <div class="main-content">
+            <div class="radio-controls">
+                <!-- REMOVED: Country and State dropdowns are gone -->
+                <h2 class="app-title">Indian Radio Stations</h2>
+                <div class="status-message" id="status-message"></div>
+            </div>
+            <div class="scene-container">
+                <div class="scene"><div class="radio"><div class="face front">
+                    <div class="antenna"></div><div class="brand">AURA</div><div class="speaker-grille"></div>
+                    <div class="digital-display">
+                        <div class="station-name" id="station-name"></div><div class="station-freq" id="station-freq">---</div>
+                    </div>
+                    <div class="knob-area">
+                        <div class="knob volume"><div class="knob-marker"></div><label>POWER</label></div>
+                        <div class="knob tuning"><div class="knob-marker"></div><label>TUNING</label></div>
+                    </div>
+                </div><div class="face back"></div><div class="face top"></div><div class="face bottom"></div><div class="face left"></div><div class="face right"></div></div></div>
+            </div>
+        </div>
+    </div>
+    <audio id="radio-player" preload="auto" crossOrigin="anonymous"></audio>
+    <script>
+        // --- 3D Rotation Logic (unchanged) ---
+        const scene = document.querySelector('.scene'); const radio = document.querySelector('.radio'); let isDragging = false, previousX, previousY, rotationX = -20, rotationY = -30; const onPointerDown = (e) => { isDragging = true; previousX = e.clientX; previousY = e.clientY; document.body.style.cursor = 'grabbing'; }; const onPointerMove = (e) => { if (!isDragging) return; const deltaX = e.clientX - previousX; const deltaY = e.clientY - previousY; rotationY += deltaX * 0.5; rotationX -= deltaY * 0.5; rotationX = Math.max(-90, Math.min(90, rotationX)); radio.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`; previousX = e.clientX; previousY = e.clientY; }; const onPointerUp = () => { isDragging = false; document.body.style.cursor = 'grab'; }; document.body.addEventListener('mousedown', onPointerDown); window.addEventListener('mousemove', onPointerMove); window.addEventListener('mouseup', onPointerUp); document.body.addEventListener('touchstart', (e) => onPointerDown(e.touches[0]), { passive: true }); window.addEventListener('touchmove', (e) => { if (isDragging) { e.preventDefault(); onPointerMove(e.touches[0]); } }, { passive: false }); window.addEventListener('touchend', onPointerUp);
+        
+        // --- DOM Elements & State ---
+        const audioPlayer = document.getElementById('radio-player'); const volumeKnob = document.querySelector('.knob.volume'); const tuningKnob = document.querySelector('.knob.tuning');
+        const statusMessage = document.getElementById('status-message'); const digitalDisplay = document.querySelector('.digital-display'); const stationNameDisplay = document.getElementById('station-name'); const stationFreqDisplay = document.getElementById('station-freq');
+        const API_BASE_URL = 'https://de1.api.radio-browser.info/json';
+        let isRadioOn = false, stations = [], currentStationIndex = -1;
+
+        // --- UI & Radio Control Functions ---
+        const setStatus = (message) => { statusMessage.textContent = message; };
+        const playStation = (index) => {
+            if (index < 0 || index >= stations.length) return;
+            if (!isRadioOn) { isRadioOn = true; digitalDisplay.classList.add('on'); }
+            currentStationIndex = index;
+            const station = stations[currentStationIndex];
+            stationNameDisplay.textContent = station.name;
+            stationFreqDisplay.textContent = station.codec ? station.codec.toUpperCase() : 'STREAM';
+            setStatus(`Tuning to: ${station.name}`);
+            audioPlayer.src = station.url_resolved;
+            audioPlayer.play().catch(() => {});
+        };
+        const togglePower = () => {
+            if (stations.length === 0) { setStatus('Stations not loaded yet.'); return; }
+            isRadioOn = !isRadioOn;
+            if (isRadioOn) {
+                digitalDisplay.classList.add('on');
+                playStation(currentStationIndex === -1 ? 0 : currentStationIndex);
+            } else {
+                audioPlayer.pause(); digitalDisplay.classList.remove('on');
+                setStatus('Radio is off.'); stationNameDisplay.textContent = ''; stationFreqDisplay.textContent = '---';
+            }
+        };
+        const changeStation = () => {
+            if (!isRadioOn || stations.length === 0) return;
+            const nextIndex = (currentStationIndex + 1) % stations.length;
+            playStation(nextIndex);
+        };
+
+        // --- API & Data Loading Functions ---
+        const resetRadioState = (message = "") => {
+            if (isRadioOn) togglePower();
+            stations = []; currentStationIndex = -1;
+            stationNameDisplay.textContent = ''; stationFreqDisplay.textContent = '---';
+            setStatus(message);
+        };
+        const loadStations = async (url, sourceMessage) => {
+            resetRadioState(`Loading stations for ${sourceMessage}...`);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response');
+                stations = (await response.json()).filter(s => s.url_resolved && s.name);
+                if (stations.length > 0) {
+                    setStatus(`Ready! Found ${stations.length} stations from ${sourceMessage}.`);
+                } else {
+                    setStatus(`No stations found for ${sourceMessage}.`);
+                }
+            } catch (error) { setStatus('Error fetching stations.'); }
+        };
+
+        // --- Event Listeners & Initialisation ---
+        volumeKnob.addEventListener('click', (e) => { e.stopPropagation(); togglePower(); });
+        tuningKnob.addEventListener('click', (e) => { e.stopPropagation(); changeStation(); });
+        audioPlayer.onerror = () => { if (isRadioOn && stations.length > 0) { setStatus(`Stream error. Skipping...`); setTimeout(changeStation, 1000); } };
+        
+        // UPDATED: On page load, directly fetch all stations from India.
+        document.addEventListener('DOMContentLoaded', () => {
+            const indiaStationsUrl = `${API_BASE_URL}/stations/bycountrycodeexact/IN?limit=200&order=votes&reverse=true`;
+            loadStations(indiaStationsUrl, "All India");
+        });
+    </script>
+</body>
+</html>
