@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Web Player</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+        :root {
+            --panel-bg: #2d3436;
+            --panel-bg-gradient: linear-gradient(140deg, #485460, #2d3436);
+            --bezel-color: #b2bec3;
+            --shadow-color: rgba(0,0,0,0.5);
+            --screen-glow: #00d2d3; /* Cyan Glow */
+            --screen-glow-shadow: #01a3a4;
+        }
+
+        body {
+            background-color: #2d3436;
+            background-image: radial-gradient(circle at center, rgba(72, 84, 96, 0.5) 0%, transparent 60%);
+            font-family: 'Helvetica Neue', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* --- THE MINIMALIST PLAYER CONTAINER --- */
+        .player-container {
+            width: 380px;
+            background: var(--panel-bg-gradient);
+            border-radius: 20px;
+            box-shadow: 
+                inset 0 1px 2px rgba(255,255,255,0.2),
+                0 30px 50px -10px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.3);
+            transform: rotateX(8deg);
+            transition: transform 0.4s ease;
+        }
+        .player-container:hover {
+            transform: rotateX(4deg) scale(1.02);
+        }
+
+        /* CRT Screen */
+        .radio-screen { 
+            background-color: #1a1a1a; 
+            border-radius: 10px; 
+            padding: 5px; 
+            height: 120px; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9); 
+            position: relative; 
+            overflow: hidden; 
+            margin-bottom: 20px;
+        }
+        /* Scanlines Effect */
+        .radio-screen::before { 
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background-image: linear-gradient(to bottom, rgba(20,20,20,0) 50%, rgba(0,0,0,0.3) 50%); 
+            background-size: 100% 4px; z-index: 2; pointer-events: none; 
+            animation: scanlines 10s linear infinite;
+        }
+        .screen-display { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%,-50%); width: 100%; 
+            text-align: center; z-index: 3;
+        }
+        #visualizer { position: absolute; bottom: 5px; left: 5px; right: 5px; height: 60px; z-index: 1; }
+        .screen-display-text { 
+            font-family: 'Orbitron', sans-serif; 
+            color: var(--screen-glow); 
+            text-shadow: 0 0 4px var(--screen-glow), 0 0 8px var(--screen-glow), 0 0 12px var(--screen-glow-shadow); 
+        }
+        #stationName { font-size: 20px; font-weight: 500; }
+        #stationCountry { font-size: 14px; opacity: 0.8; }
+        
+        /* Controls Area */
+        .controls-area { display: flex; flex-direction: column; gap: 15px; }
+        .control-group { display: flex; align-items: center; gap: 10px; position: relative; }
+        .control-group label { 
+            font-size: 16px; font-weight: bold; color: var(--bezel-color); 
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.4); 
+            width: 70px; flex-shrink: 0;
+        }
+        
+        /* Controls Styling */
+        #powerButton { 
+            width: 45px; height: 35px; background: linear-gradient(to bottom, #7d7d7d, #333); 
+            border: 1px solid #222; border-radius: 8px; 
+            box-shadow: 0 4px 0 #222, 0 5px 4px rgba(0,0,0,0.4); 
+            transition: all 0.1s ease-out; cursor: pointer; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        #powerButton:disabled { background: #555; box-shadow: 0 4px 0 #222; cursor: not-allowed; opacity: 0.6; }
+        #powerButton:active:not(:disabled), #powerButton.pushed { transform: translateY(3px); box-shadow: 0 1px 0 #222; }
+        .power-light { 
+            width: 12px; height: 12px; border-radius: 50%; 
+            background-color: var(--screen-glow); 
+            box-shadow: 0 0 8px var(--screen-glow), inset 0 0 5px white; 
+            border: 1px solid #333; opacity: 0.2; transition: opacity 0.5s ease; 
+        }
+        #powerButton.playing .power-light { opacity: 1; }
+        
+        #searchInput { 
+            background: #1a1a1a; color: #e0e0e0; border: none; border-radius: 5px; 
+            padding: 8px 12px; font-family: inherit; 
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.7); 
+            width: 100%; outline: none; transition: box-shadow 0.2s;
+        }
+        #searchInput:focus { box-shadow: inset 0 1px 4px rgba(0,0,0,0.7), 0 0 10px var(--screen-glow); }
+        
+        #suggestionsBox { 
+            position: absolute; top: 100%; left: 80px; right: 0; 
+            background-color: #3a3a3a; border: 1px solid #1a1a1a; 
+            border-top: none; border-radius: 0 0 8px 8px; 
+            z-index: 1000; max-height: 150px; overflow-y: auto; 
+        }
+        .suggestion-item { padding: 8px 12px; cursor: pointer; font-size: 14px; color: #e0e0e0; }
+        .suggestion-item:hover { background-color: var(--screen-glow-shadow); }
+        .hidden { display: none; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #1a1a1a; border-radius: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 12px; border-radius: 3px; margin-top: -6px; background: #dfe6e9; border: 1px solid #555; cursor: pointer; }
+        
+        @keyframes flicker { 0%, 100% { opacity: 1; } 20% { opacity: 0.8; } 40% { opacity: 0.3; } 60% { opacity: 1; } 80% { opacity: 0.5; } }
+        .screen-flicker { animation: flicker 0.2s 1; }
+        @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 100px; } }
+        #audioPlayer { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="radio-screen" id="radioScreen">
+            <canvas id="visualizer"></canvas>
+            <div class="screen-display">
+                <div id="stationName" class="screen-display-text">Loading...</div>
+                <div id="stationCountry" class="screen-display-text">Please wait</div>
+            </div>
+        </div>
+        <div class="controls-area">
+            <div class="control-group">
+                <label for="powerButton">Power</label>
+                <button id="powerButton" disabled><div class="power-light"></div></button>
+            </div>
+            <div class="control-group">
+                <label for="searchInput">Search</label>
+                <input type="text" id="searchInput" placeholder="Power on..." disabled>
+            </div>
+            <div class="control-group">
+                <label for="volumeControl">Volume</label>
+                <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5" disabled>
+            </div>
+            <div id="suggestionsBox" class="hidden"></div>
+        </div>
+    </div>
+    
+    <audio id="audioPlayer" crossorigin="anonymous"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_URL = "https://de1.api.radio-browser.info/json/stations/search?limit=300&order=clickcount&reverse=true&hidebroken=true&codec=MP3";
+            const dom = {
+                audioPlayer: document.getElementById('audioPlayer'),
+                powerButton: document.getElementById('powerButton'),
+                searchInput: document.getElementById('searchInput'),
+                suggestionsBox: document.getElementById('suggestionsBox'),
+                volumeControl: document.getElementById('volumeControl'),
+                radioScreen: document.getElementById('radioScreen'),
+                stationName: document.getElementById('stationName'),
+                stationCountry: document.getElementById('stationCountry'),
+                visualizerCanvas: document.getElementById('visualizer'),
+            };
+
+            const canvasCtx = dom.visualizerCanvas.getContext('2d');
+            let audioCtx, analyser, source, dataArray, bufferLength;
+            let stations = [], isRadioOn = false, currentStationIndex = -1, animationFrameId;
+
+            async function fetchStations() {
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    stations = data.map(s => ({ name: s.name.trim(), country: s.country||'Unknown', url: s.url_resolved })).filter(s => s.name && s.url);
+                    dom.powerButton.disabled = false;
+                    updateDisplay("--- OFF ---", "Ready to Play");
+                } catch (error) { console.error("Failed to fetch stations:", error); updateDisplay("API Error", "Please Reload"); }
+            }
+            
+            function setupAudioVisualizer() {
+                if(audioCtx) return;
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                source = audioCtx.createMediaElementSource(dom.audioPlayer);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+            }
+
+            function drawVisualizer() {
+                animationFrameId = requestAnimationFrame(drawVisualizer);
+                analyser.getByteFrequencyData(dataArray);
+                canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height);
+                let barWidth = (dom.visualizerCanvas.width / bufferLength) * 1.5;
+                let x = 0;
+                const gradient = canvasCtx.createLinearGradient(0, 0, 0, dom.visualizerCanvas.height);
+                gradient.addColorStop(0, '#00d2d3');
+                gradient.addColorStop(1, 'rgba(0, 210, 211, 0.1)');
+                canvasCtx.fillStyle = gradient;
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = dataArray[i] / 2.5;
+                    canvasCtx.fillRect(x, dom.visualizerCanvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth + 2;
+                }
+            }
+
+            function updateDisplay(name, country) { dom.stationName.textContent = name; dom.stationCountry.textContent = country; }
+
+            function playStation(index) {
+                if (index < 0 || index >= stations.length || !isRadioOn) return;
+                currentStationIndex = index;
+                const station = stations[index];
+                updateDisplay("Tuning...", station.country);
+                dom.audioPlayer.src = station.url;
+                dom.audioPlayer.play().catch(e => { console.error("Playback failed:", e); updateDisplay("Stream Error", "Check Console"); });
+            }
+            
+            function togglePower() {
+                isRadioOn = !isRadioOn;
+                dom.powerButton.classList.toggle('playing', isRadioOn);
+                dom.powerButton.classList.add('pushed');
+                setTimeout(() => dom.powerButton.classList.remove('pushed'), 150);
+
+                if (isRadioOn) {
+                    dom.radioScreen.classList.add('screen-flicker');
+                    setTimeout(() => dom.radioScreen.classList.remove('screen-flicker'), 200);
+                    setupAudioVisualizer();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    dom.searchInput.disabled = false; dom.searchInput.placeholder = "Search stations..."; dom.volumeControl.disabled = false;
+                    if (currentStationIndex === -1) playStation(0); 
+                    else dom.audioPlayer.play().catch(e => console.error("Resume failed", e));
+                    if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                    drawVisualizer();
+                } else {
+                    dom.audioPlayer.pause();
+                    dom.searchInput.disabled = true; dom.searchInput.placeholder = "Power on..."; dom.volumeControl.disabled = true;
+                    dom.searchInput.value = ""; dom.suggestionsBox.classList.add('hidden');
+                    updateDisplay("--- OFF ---", "Power is off");
+                    if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                    canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height);
+                }
+            }
+            
+            function renderSuggestions(filtered) {
+                const searchGroup = dom.searchInput.closest('.control-group');
+                dom.suggestionsBox.innerHTML = '';
+                if(filtered.length === 0) { dom.suggestionsBox.classList.add('hidden'); return; }
+                filtered.slice(0, 5).forEach(station => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = `${station.name} (${station.country})`;
+                    item.addEventListener('click', () => {
+                        const stationIndex = stations.indexOf(station);
+                        dom.searchInput.value = station.name;
+                        dom.suggestionsBox.classList.add('hidden');
+                        if (stationIndex !== -1) playStation(stationIndex);
+                    });
+                    dom.suggestionsBox.appendChild(item);
+                });
+                searchGroup.appendChild(dom.suggestionsBox);
+                dom.suggestionsBox.classList.remove('hidden');
+            }
+
+            dom.powerButton.addEventListener('click', togglePower);
+            dom.searchInput.addEventListener('input', () => {
+                const query = dom.searchInput.value.toLowerCase();
+                if (query.length < 2) { dom.suggestionsBox.classList.add('hidden'); return; }
+                const filtered = stations.filter(s => s.name.toLowerCase().includes(query));
+                renderSuggestions(filtered);
+            });
+            document.addEventListener('click', (e) => { if (!e.target.closest('.control-group')) dom.suggestionsBox.classList.add('hidden'); });
+            dom.volumeControl.addEventListener('input', (e) => { dom.audioPlayer.volume = e.target.value; });
+            dom.audioPlayer.addEventListener('playing', () => { if (currentStationIndex !== -1) updateDisplay(stations[currentStationIndex].name, stations[currentStationIndex].country); });
+            dom.audioPlayer.addEventListener('error', (e) => { console.error('Audio Error:', e); updateDisplay("Stream Unavailable", stations[currentStationIndex]?.country || ''); });
+            
+            fetchStations();
+            dom.audioPlayer.volume = dom.volumeControl.value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Battlestation Radio</title>
+    <style>
+        /* --- Google Font for a futuristic, sci-fi feel --- */
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700&display=swap');
+
+        :root {
+            --bg-color: #121417;
+            --surface-color: #1a1d21;
+            --border-color: rgba(128, 222, 234, 0.2); /* Cyan border */
+            --text-primary: #e0f7fa;
+            --text-secondary: #78909c;
+            --accent-green: #69F0AE;
+            --accent-blue: #40C4FF;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                linear-gradient(rgba(26, 29, 33, 0.95), rgba(26, 29, 33, 0.95)),
+                linear-gradient(120deg, transparent 49.5%, var(--surface-color) 49.5%, var(--surface-color) 50.5%, transparent 50.5%),
+                linear-gradient(60deg, transparent 49.5%, var(--surface-color) 49.5%, var(--surface-color) 50.5%, transparent 50.5%),
+                linear-gradient(180deg, transparent 49.5%, var(--surface-color) 49.5%, var(--surface-color) 50.5%, transparent 50.5%);
+            background-size: 100% 100%, 60px 104px, 60px 104px, 60px 104px;
+            font-family: 'Exo 2', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        /* --- Angular Gaming PC Case Style Container --- */
+        .player-container {
+            width: 90%;
+            max-width: 400px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            clip-path: polygon(0 25px, 25px 0, 100% 0, 100% calc(100% - 25px), calc(100% - 25px) 100%, 0 100%);
+        }
+
+        /* --- HUD Display & Visualizer --- */
+        .display-area { text-align: center; }
+        #station-info { margin-bottom: 15px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
+        #station-name { font-size: 2.2em; font-weight: 700; color: #fff; letter-spacing: 1px; text-shadow: 0 0 10px var(--accent-green); }
+        #station-country { font-size: 1.2em; font-weight: 500; color: var(--text-secondary); }
+        
+        #visualizer-container {
+            height: 80px; width: 100%; border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #000;
+            padding: 5px; box-sizing: border-box; margin-bottom: 15px;
+        }
+        #visualizer { width: 100%; height: 100%; }
+
+        /* --- Search Bar & Suggestions --- */
+        .search-container { position: relative; z-index: 2; }
+        #search-input {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3);
+            border: 1px solid #000; border-radius: 4px;
+            color: var(--text-primary); font-family: 'Exo 2', sans-serif;
+            font-size: 1em; outline: none; transition: all 0.3s ease; box-sizing: border-box;
+        }
+        #search-input:focus { border-color: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        #search-input::placeholder { color: var(--text-secondary); }
+        #search-input:disabled { background: rgba(0,0,0,0.5); cursor: not-allowed; }
+        
+        #suggestions-box { position: absolute; top: 105%; left: 0; right: 0; background: rgba(18, 20, 23, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 4px; max-height: 180px; overflow-y: auto; z-index: 100; }
+        .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.2s ease; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: rgba(105, 240, 174, 0.1); }
+        .suggestion-name { font-weight: 700; color: #fff; }
+        .suggestion-country { font-size: 0.9em; color: var(--text-secondary); }
+        .hidden { display: none; }
+        
+        /* --- Controls (Hexagonal & Futuristic) --- */
+        .controls { display: flex; flex-direction: column; gap: 15px; }
+        .top-controls { display: flex; justify-content: space-between; align-items: center; }
+        .button-group { display: flex; justify-content: center; }
+
+        .control-button {
+            background: #262a2e; border: 1px solid #111;
+            color: var(--text-secondary); cursor: pointer;
+            transition: all 0.2s ease-in-out; display: flex; justify-content: center; align-items: center;
+            /* Hexagon Shape */
+            clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+        }
+        .control-button:hover:not(:disabled) { background: #373c41; color: var(--text-primary); }
+        .control-button:disabled { background: #222; color: #444; cursor: not-allowed; }
+        
+        #play-pause-btn { font-size: 2.2em; width: 80px; height: 90px; color: var(--text-primary); }
+        #play-pause-btn.playing { color: var(--accent-green); text-shadow: 0 0 10px var(--accent-green); animation: pulse-rgb 2s infinite; }
+        
+        #nearby-btn { font-size: 1.8em; width: 70px; height: 80px; }
+
+        @keyframes pulse-rgb {
+            0% { box-shadow: 0 0 5px var(--accent-green); }
+            50% { box-shadow: 0 0 20px var(--accent-blue); }
+            100% { box-shadow: 0 0 5px var(--accent-green); }
+        }
+
+        .power-switch-container { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-secondary); }
+        .power-switch { cursor: pointer; width: 60px; height: 28px; background: #111; border-radius: 14px; position: relative; border: 1px solid #000; }
+        .power-switch-handle { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #444; border-radius: 50%; transition: 0.3s; }
+        .power-switch.on { background-image: linear-gradient(90deg, var(--accent-green), var(--accent-blue)); }
+        .power-switch.on .power-switch-handle { background: #fff; transform: translateX(32px); }
+
+        #volume-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #111; border-radius: 4px; outline: none; }
+        #volume-slider:disabled { opacity: 0.5; }
+        #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer; transition: all 0.2s; }
+        #volume-slider:hover::-webkit-slider-thumb { box-shadow: 0 0 10px var(--accent-blue); }
+    </style>
+</head>
+<body>
+
+    <!-- The HTML Structure is the same as the last versions -->
+    <div class="player-container">
+        <div class="display-area">
+            <div id="station-info">
+                <span id="station-name">BATTLE.FM</span>
+                <span id="station-country">Loading...</span>
+            </div>
+            <div id="visualizer-container"><canvas id="visualizer"></canvas></div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Engage system to scan frequencies..." disabled>
+            <div id="suggestions-box" class="hidden"></div>
+        </div>
+        <div class="controls">
+            <div class="top-controls">
+                <div class="power-switch-container">
+                    <div class="power-switch" id="power-switch" title="System Power"><div class="power-switch-handle"></div></div>
+                    <div>Power</div>
+                </div>
+                <button id="nearby-btn" class="control-button" title="Scan Local Area" disabled>📍</button>
+            </div>
+            <div class="button-group">
+                <button id="play-pause-btn" class="control-button" title="Engage/Disengage Stream" disabled>►</button>
+            </div>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" title="Audio Levels" disabled>
+        </div>
+    </div>
+    
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+
+    <script>
+        // The JavaScript is IDENTICAL to the last versions, with one tiny change for the visualizer color.
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = "https://de1.api.radio-browser.info/json/";
+            const dom = {
+                audioPlayer: document.getElementById('audio-player'), powerSwitch: document.getElementById('power-switch'), playPauseBtn: document.getElementById('play-pause-btn'), nearbyBtn: document.getElementById('nearby-btn'),
+                volumeSlider: document.getElementById('volume-slider'), stationName: document.getElementById('station-name'), stationCountry: document.getElementById('station-country'),
+                visualizerCanvas: document.getElementById('visualizer'), searchInput: document.getElementById('search-input'), suggestionsBox: document.getElementById('suggestions-box'),
+            };
+            const canvasCtx = dom.visualizerCanvas.getContext('2d');
+            let audioCtx, analyser, source, dataArray, bufferLength, animationFrameId;
+            let allStations = [], currentStation = null, isPoweredOn = false, isPlaying = false;
+
+            const setupVisualizer = () => { if (audioCtx) return; audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); source = audioCtx.createMediaElementSource(dom.audioPlayer); source.connect(analyser); analyser.connect(audioCtx.destination); analyser.fftSize = 128; bufferLength = analyser.frequencyBinCount; dataArray = new Uint8Array(bufferLength); };
+            const drawVisualizer = () => {
+                if (!isPoweredOn || !isPlaying) { canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height); return; }
+                animationFrameId = requestAnimationFrame(drawVisualizer); analyser.getByteFrequencyData(dataArray); canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height);
+                const barWidth = (dom.visualizerCanvas.width / bufferLength); let x = 0;
+                // --- STYLE CHANGE FOR VISUALIZER ---
+                const gradient = canvasCtx.createLinearGradient(0, 0, 0, dom.visualizerCanvas.height);
+                gradient.addColorStop(0, '#69F0AE'); // Accent Green
+                gradient.addColorStop(1, '#40C4FF'); // Accent Blue
+                // --- END OF STYLE CHANGE ---
+                for (let i = 0; i < bufferLength; i++) { const barHeight = (dataArray[i] / 255) * dom.visualizerCanvas.height; canvasCtx.fillStyle = gradient; canvasCtx.fillRect(x, dom.visualizerCanvas.height - barHeight, barWidth, barHeight); x += barWidth + 1; }
+            };
+
+            const updateDisplay = (name, country) => { dom.stationName.textContent = name; dom.stationCountry.textContent = country; };
+            const playRadio = () => { if (!currentStation || !isPoweredOn) return; isPlaying = true; dom.audioPlayer.play().catch(e => { console.error("Playback failed:", e); isPlaying = false; }); dom.playPauseBtn.innerHTML = '❚❚'; dom.playPauseBtn.classList.add('playing'); drawVisualizer(); };
+            const pauseRadio = () => { isPlaying = false; dom.audioPlayer.pause(); dom.playPauseBtn.innerHTML = '►'; dom.playPauseBtn.classList.remove('playing'); };
+            const togglePlayPause = () => { if (isPlaying) { pauseRadio(); } else { playRadio(); } };
+            const loadStation = (station) => { if (!station) return; currentStation = station; updateDisplay(station.name, station.country); dom.audioPlayer.src = station.url; if (isPlaying) playRadio(); };
+            const togglePower = () => { isPoweredOn = !isPoweredOn; dom.powerSwitch.classList.toggle('on', isPoweredOn); const controlsToToggle = [dom.playPauseBtn, dom.searchInput, dom.volumeSlider, dom.nearbyBtn]; if (isPoweredOn) { setupVisualizer(); if (audioCtx.state === 'suspended') audioCtx.resume(); controlsToToggle.forEach(c => c.disabled = false); dom.searchInput.placeholder = "Scan Frequencies..."; if(currentStation) updateDisplay(currentStation.name, currentStation.country); else updateDisplay("Awaiting Input", "Select a station"); } else { pauseRadio(); controlsToToggle.forEach(c => c.disabled = true); dom.searchInput.placeholder = "Engage system to scan frequencies..."; dom.searchInput.value = ''; dom.suggestionsBox.classList.add('hidden'); updateDisplay("BATTLE.FM", "System Offline"); } };
+            const renderSuggestions = (stationList, title) => { dom.suggestionsBox.innerHTML = ''; if (!stationList || stationList.length === 0) { dom.suggestionsBox.classList.add('hidden'); return; } if (title) { const titleEl = document.createElement('div'); titleEl.className = 'suggestion-item'; titleEl.style.fontWeight = 'bold'; titleEl.style.color = 'var(--accent-green)'; titleEl.textContent = title; dom.suggestionsBox.appendChild(titleEl); } stationList.slice(0, 20).forEach(station => { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<div class="suggestion-name">${station.name}</div><div class="suggestion-country">${station.country}</div>`; item.addEventListener('click', () => { dom.searchInput.value = ''; dom.suggestionsBox.classList.add('hidden'); loadStation(station); }); dom.suggestionsBox.appendChild(item); }); dom.suggestionsBox.classList.remove('hidden'); };
+            const handleSearch = () => { const query = dom.searchInput.value.toLowerCase(); if (query.length < 2) { dom.suggestionsBox.classList.add('hidden'); return; } renderSuggestions(allStations.filter(s => s.name.toLowerCase().includes(query))); };
+            const handleNearbyClick = () => { if (!navigator.geolocation) { updateDisplay("Geolocation", "Signal Lost"); return; } const originalStation = currentStation; updateDisplay("Scanning...", "Triangulating Position"); navigator.geolocation.getCurrentPosition(async (position) => { updateDisplay("Fetching Data...", "Position Locked!"); const { latitude, longitude } = position.coords; try { const response = await fetch(`${API_BASE_URL}stations/bygeolocation?lat=${latitude}&long=${longitude}`); const data = await response.json(); const nearbyStations = data.filter(s => s.name && s.url_resolved).map(s => ({ name: s.name.trim(), country: s.countrycode || 'Local', url: s.url_resolved })); if (nearbyStations.length > 0) { renderSuggestions(nearbyStations, `Found ${nearbyStations.length} Local Signals`); if (originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Awaiting Input", "Select a station"); } else { updateDisplay("Scan Failed", "No signals in range"); setTimeout(() => { if (originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Awaiting Input", "Select a station"); }, 2000); } } catch (error) { console.error("Error fetching nearby stations:", error); updateDisplay("API Error", "Could not connect to network"); } }, (error) => { let message; switch (error.code) { case error.PERMISSION_DENIED: message = "Access Denied"; break; case error.POSITION_UNAVAILABLE: message = "Position Unavailable"; break; case error.TIMEOUT: message = "Request Timed Out"; break; default: message = "Unknown System Error"; break; } updateDisplay(message, "Manual input required"); setTimeout(() => { if(originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Awaiting Input", "Select a station"); }, 3000); }); };
+            async function initialize() { try { const response = await fetch(`${API_BASE_URL}stations/search?limit=300&order=clickcount&reverse=true&hidebroken=true`); const data = await response.json(); allStations = data.filter(s => s.name && s.url_resolved).map(s => ({ name: s.name.trim(), country: s.country || 'Unknown', url: s.url_resolved })); if (allStations.length > 0) { currentStation = allStations[0]; updateDisplay("BATTLE.FM", "System Ready"); } else { updateDisplay("Network Error", "No stations found"); } } catch (error) { console.error("Failed to fetch stations:", error); updateDisplay("Network Error", "Please refresh"); } }
+            
+            dom.powerSwitch.addEventListener('click', togglePower); dom.playPauseBtn.addEventListener('click', togglePlayPause); dom.nearbyBtn.addEventListener('click', handleNearbyClick);
+            dom.searchInput.addEventListener('input', handleSearch); dom.volumeSlider.addEventListener('input', () => dom.audioPlayer.volume = dom.volumeSlider.value);
+            dom.audioPlayer.addEventListener('ended', pauseRadio); document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) dom.suggestionsBox.classList.add('hidden'); });
+            dom.audioPlayer.volume = dom.volumeSlider.value;
+            initialize();
+        });
+    </script>
+</body>
+</html>

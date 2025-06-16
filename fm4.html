@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Web Radio</title>
+    <style>
+        /* --- Google Fonts for the vintage feel --- */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --wood-gradient: linear-gradient(to bottom, #8a5a44, #6b4632);
+            --metal-plate: #332d29;
+            --dark-bakelite: #2c1f17;
+            --display-bg: #f5e5c6;
+            --display-text: #3b2b20;
+            --display-glow: #a5d6a7; /* Soft green for visualizer */
+        }
+
+        body {
+            background-color: #3d2c21;
+            background-image: linear-gradient(45deg, #2a1d16 25%, transparent 25%), linear-gradient(-45deg, #2a1d16 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a1d16 75%), linear-gradient(-45deg, transparent 75%, #2a1d16 75%);
+            background-size: 20px 20px;
+            font-family: 'Roboto', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0;
+        }
+
+        /* --- Vintage Wooden Player Container --- */
+        .player-container {
+            width: 90%; max-width: 400px;
+            background: var(--wood-gradient);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 5px 15px rgba(255,255,255,0.2), inset 0 -5px 15px rgba(0,0,0,0.4);
+            border: 5px solid #4a372a;
+            padding: 25px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        
+        /* --- Display Panel --- */
+        .display-area {
+            background-color: var(--metal-plate);
+            border: 3px solid #1a1a1a;
+            border-radius: 10px; padding: 10px;
+            box-shadow: inset 0 0 10px #000;
+        }
+        #station-info {
+            background: var(--display-bg);
+            border-radius: 5px;
+            padding: 10px; text-align: center;
+            min-height: 60px; display: flex; flex-direction: column; justify-content: center;
+        }
+        #station-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em; color: var(--display-text);
+            line-height: 1.1;
+        }
+        #station-country { font-size: 1.1em; color: var(--display-text); opacity: 0.8; }
+        
+        #visualizer-container {
+            height: 60px; margin-top: 10px;
+            background: #2e4635; /* Dark green CRT screen */
+            border: 2px solid #1a1a1a;
+            border-radius: 5px; padding: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.7);
+        }
+        #visualizer { width: 100%; height: 100%; }
+
+        /* --- Search Bar (recessed in metal) --- */
+        .search-container { position: relative; z-index: 2; }
+        #search-input {
+            width: 100%; padding: 12px;
+            background: var(--metal-plate);
+            border: 2px solid #1a1a1a;
+            box-shadow: inset 0 2px 4px #000;
+            border-radius: 5px;
+            color: var(--display-bg);
+            font-family: 'Roboto', sans-serif;
+            font-size: 1em; outline: none; box-sizing: border-box;
+        }
+        #search-input:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        #suggestions-box { position: absolute; top: 105%; left: 0; right: 0; background: var(--dark-bakelite); border: 2px solid #1a1a1a; border-radius: 5px; max-height: 180px; overflow-y: auto; z-index: 100; }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--metal-plate); color: var(--display-bg); }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: var(--metal-plate); }
+        .suggestion-name { font-weight: 700; }
+        .suggestion-country { font-size: 0.9em; opacity: 0.7; }
+        .hidden { display: none; }
+
+        /* --- Controls (Bakelite & Metal) --- */
+        .controls { display: flex; flex-direction: column; gap: 15px; }
+        .top-controls { display: flex; justify-content: space-between; align-items: center; background: var(--metal-plate); border: 3px solid #1a1a1a; border-radius: 10px; padding: 15px; box-shadow: inset 0 0 10px #000; }
+        .button-group { display: flex; justify-content: center; }
+
+        /* Bakelite Buttons */
+        .control-button {
+            background: var(--dark-bakelite);
+            border: 3px solid #5c473a;
+            color: var(--display-bg);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.2);
+            transition: all 0.1s ease-in-out;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .control-button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.2); }
+        .control-button:disabled { opacity: 0.5; cursor: not-allowed; background: #555; }
+        
+        #play-pause-btn { font-size: 2.2em; width: 80px; height: 80px; }
+        #play-pause-btn.playing { box-shadow: 0 0 15px 5px #ffc107, 0 5px 10px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.2); }
+        
+        #nearby-btn { font-size: 1.8em; width: 60px; height: 60px; }
+
+        /* Vintage Metal Toggle Switch */
+        .power-switch-container { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--display-bg); font-weight: 700; }
+        .power-switch { cursor: pointer; width: 70px; height: 30px; background: #222; border-radius: 4px; position: relative; border: 2px solid #111; box-shadow: inset 0 2px 4px #000; }
+        .power-switch-handle { content: ''; position: absolute; top: 2px; left: 3px; width: 25px; height: 20px; background: linear-gradient(#ccc, #888); border-radius: 3px; transition: 0.3s; box-shadow: 0 2px 3px rgba(0,0,0,0.5); }
+        .power-switch.on { }
+        .power-switch.on .power-switch-handle { transform: translateX(35px); }
+
+        /* Vintage Slider */
+        #volume-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 15px; background: var(--metal-plate); border-radius: 5px; outline: none; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); border: 2px solid #1a1a1a; }
+        #volume-slider:disabled { opacity: 0.5; }
+        #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 25px; height: 25px; background: var(--dark-bakelite); border: 2px solid #5c473a; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.4); margin-top: -7px; }
+    </style>
+</head>
+<body>
+    <!-- The HTML Structure is the same as the last versions -->
+    <div class="player-container">
+        <div class="display-area">
+            <div id="station-info">
+                <span id="station-name">CLASSIC DX</span>
+                <span id="station-country">Loading...</span>
+            </div>
+            <div id="visualizer-container"><canvas id="visualizer"></canvas></div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Power on to search..." disabled>
+            <div id="suggestions-box" class="hidden"></div>
+        </div>
+        <div class="controls">
+            <div class="top-controls">
+                <div class="power-switch-container">
+                    <div class="power-switch" id="power-switch" title="Power On/Off"><div class="power-switch-handle"></div></div>
+                    <div>Power</div>
+                </div>
+                <button id="nearby-btn" class="control-button" title="Find Nearby Stations" disabled>📍</button>
+            </div>
+            <div class="button-group">
+                <button id="play-pause-btn" class="control-button" title="Play/Pause" disabled>►</button>
+            </div>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" title="Volume" disabled>
+        </div>
+    </div>
+    
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+
+    <script>
+        // The JavaScript is IDENTICAL to the last versions, with one tiny change for the visualizer color.
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = "https://de1.api.radio-browser.info/json/";
+            const dom = {
+                audioPlayer: document.getElementById('audio-player'), powerSwitch: document.getElementById('power-switch'), playPauseBtn: document.getElementById('play-pause-btn'), nearbyBtn: document.getElementById('nearby-btn'),
+                volumeSlider: document.getElementById('volume-slider'), stationName: document.getElementById('station-name'), stationCountry: document.getElementById('station-country'),
+                visualizerCanvas: document.getElementById('visualizer'), searchInput: document.getElementById('search-input'), suggestionsBox: document.getElementById('suggestions-box'),
+            };
+            const canvasCtx = dom.visualizerCanvas.getContext('2d');
+            let audioCtx, analyser, source, dataArray, bufferLength, animationFrameId;
+            let allStations = [], currentStation = null, isPoweredOn = false, isPlaying = false;
+
+            const setupVisualizer = () => { if (audioCtx) return; audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); source = audioCtx.createMediaElementSource(dom.audioPlayer); source.connect(analyser); analyser.connect(audioCtx.destination); analyser.fftSize = 128; bufferLength = analyser.frequencyBinCount; dataArray = new Uint8Array(bufferLength); };
+            const drawVisualizer = () => {
+                if (!isPoweredOn || !isPlaying) { canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height); return; }
+                animationFrameId = requestAnimationFrame(drawVisualizer); analyser.getByteFrequencyData(dataArray); canvasCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height);
+                const barWidth = (dom.visualizerCanvas.width / bufferLength); let x = 0;
+                // --- STYLE CHANGE FOR VISUALIZER ---
+                const gradient = canvasCtx.createLinearGradient(0, 0, 0, dom.visualizerCanvas.height);
+                gradient.addColorStop(0, '#c5e1a5'); // Lighter green
+                gradient.addColorStop(1, '#8bc34a'); // Fuller green
+                // --- END OF STYLE CHANGE ---
+                for (let i = 0; i < bufferLength; i++) { const barHeight = (dataArray[i] / 255) * dom.visualizerCanvas.height; canvasCtx.fillStyle = gradient; canvasCtx.fillRect(x, dom.visualizerCanvas.height - barHeight, barWidth, barHeight); x += barWidth + 1; }
+            };
+
+            const updateDisplay = (name, country) => { dom.stationName.textContent = name; dom.stationCountry.textContent = country; };
+            const playRadio = () => { if (!currentStation || !isPoweredOn) return; isPlaying = true; dom.audioPlayer.play().catch(e => { console.error("Playback failed:", e); isPlaying = false; }); dom.playPauseBtn.innerHTML = '❚❚'; dom.playPauseBtn.classList.add('playing'); drawVisualizer(); };
+            const pauseRadio = () => { isPlaying = false; dom.audioPlayer.pause(); dom.playPauseBtn.innerHTML = '►'; dom.playPauseBtn.classList.remove('playing'); };
+            const togglePlayPause = () => { if (isPlaying) { pauseRadio(); } else { playRadio(); } };
+            const loadStation = (station) => { if (!station) return; currentStation = station; updateDisplay(station.name, station.country); dom.audioPlayer.src = station.url; if (isPlaying) playRadio(); };
+            const togglePower = () => { isPoweredOn = !isPoweredOn; dom.powerSwitch.classList.toggle('on', isPoweredOn); const controlsToToggle = [dom.playPauseBtn, dom.searchInput, dom.volumeSlider, dom.nearbyBtn]; if (isPoweredOn) { setupVisualizer(); if (audioCtx.state === 'suspended') audioCtx.resume(); controlsToToggle.forEach(c => c.disabled = false); dom.searchInput.placeholder = "Search stations..."; if(currentStation) updateDisplay(currentStation.name, currentStation.country); else updateDisplay("Ready", "Select a station"); } else { pauseRadio(); controlsToToggle.forEach(c => c.disabled = true); dom.searchInput.placeholder = "Power on to search..."; dom.searchInput.value = ''; dom.suggestionsBox.classList.add('hidden'); updateDisplay("CLASSIC DX", "Powered Off"); } };
+            const renderSuggestions = (stationList, title) => { dom.suggestionsBox.innerHTML = ''; if (!stationList || stationList.length === 0) { dom.suggestionsBox.classList.add('hidden'); return; } if (title) { const titleEl = document.createElement('div'); titleEl.className = 'suggestion-item'; titleEl.style.fontWeight = 'bold'; titleEl.style.color = '#ffc107'; titleEl.textContent = title; dom.suggestionsBox.appendChild(titleEl); } stationList.slice(0, 20).forEach(station => { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<div class="suggestion-name">${station.name}</div><div class="suggestion-country">${station.country}</div>`; item.addEventListener('click', () => { dom.searchInput.value = ''; dom.suggestionsBox.classList.add('hidden'); loadStation(station); }); dom.suggestionsBox.appendChild(item); }); dom.suggestionsBox.classList.remove('hidden'); };
+            const handleSearch = () => { const query = dom.searchInput.value.toLowerCase(); if (query.length < 2) { dom.suggestionsBox.classList.add('hidden'); return; } renderSuggestions(allStations.filter(s => s.name.toLowerCase().includes(query))); };
+            const handleNearbyClick = () => { if (!navigator.geolocation) { updateDisplay("Geolocation", "Not supported"); return; } const originalStation = currentStation; updateDisplay("Locating...", "Please grant permission"); navigator.geolocation.getCurrentPosition(async (position) => { updateDisplay("Fetching Stations...", "Location found!"); const { latitude, longitude } = position.coords; try { const response = await fetch(`${API_BASE_URL}stations/bygeolocation?lat=${latitude}&long=${longitude}`); const data = await response.json(); const nearbyStations = data.filter(s => s.name && s.url_resolved).map(s => ({ name: s.name.trim(), country: s.countrycode || 'Nearby', url: s.url_resolved })); if (nearbyStations.length > 0) { renderSuggestions(nearbyStations, `Found ${nearbyStations.length} Nearby Stations`); if (originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Ready", "Select a station"); } else { updateDisplay("No Results", "No stations found nearby"); setTimeout(() => { if (originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Ready", "Select a station"); }, 2000); } } catch (error) { console.error("Error fetching nearby stations:", error); updateDisplay("API Error", "Could not fetch nearby"); } }, (error) => { let message; switch (error.code) { case error.PERMISSION_DENIED: message = "Location permission denied"; break; case error.POSITION_UNAVAILABLE: message = "Location unavailable"; break; case error.TIMEOUT: message = "Location request timed out"; break; default: message = "An unknown error occurred"; break; } updateDisplay(message, "Please try again or search"); setTimeout(() => { if(originalStation) updateDisplay(originalStation.name, originalStation.country); else updateDisplay("Ready", "Select a station"); }, 3000); }); };
+            async function initialize() { try { const response = await fetch(`${API_BASE_URL}stations/search?limit=300&order=clickcount&reverse=true&hidebroken=true`); const data = await response.json(); allStations = data.filter(s => s.name && s.url_resolved).map(s => ({ name: s.name.trim(), country: s.country || 'Unknown', url: s.url_resolved })); if (allStations.length > 0) { currentStation = allStations[0]; updateDisplay("CLASSIC DX", "Ready"); } else { updateDisplay("API Error", "No stations found"); } } catch (error) { console.error("Failed to fetch stations:", error); updateDisplay("API Error", "Please refresh"); } }
+            
+            dom.powerSwitch.addEventListener('click', togglePower); dom.playPauseBtn.addEventListener('click', togglePlayPause); dom.nearbyBtn.addEventListener('click', handleNearbyClick);
+            dom.searchInput.addEventListener('input', handleSearch); dom.volumeSlider.addEventListener('input', () => dom.audioPlayer.volume = dom.volumeSlider.value);
+            dom.audioPlayer.addEventListener('ended', pauseRadio); document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) dom.suggestionsBox.classList.add('hidden'); });
+            dom.audioPlayer.volume = dom.volumeSlider.value;
+            initialize();
+        });
+    </script>
+</body>
+</html>
