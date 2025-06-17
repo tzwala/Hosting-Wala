@@ -8,17 +8,17 @@
         :root { --brand-green: #00ff00; --dark-bg: #1c1c1e; --medium-bg: #2c2c2e; --favorited-red: #ff453a;}
         body, html { margin: 0; overflow: hidden; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: white; height: 100%; }
         #app-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; background-color: transparent; }
-        #globe-area { flex-grow: 1; position: relative; min-height: 0; }
+        #globe-area { flex-grow: 1; position: relative; }
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: grab; }
         #selector-ring { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border: 2px dashed white; opacity: 0.8; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
         #side-icons { position: absolute; top: 40px; right: 15px; display: flex; flex-direction: column; gap: 25px; z-index: 10; }
         .side-icon { width: 24px; height: 24px; cursor: pointer; transition: transform 0.2s; }
         .side-icon:hover { transform: scale(1.1); }
         #player-panel { width: 100%; z-index: 10; display: flex; flex-direction: column; box-shadow: 0 -5px 15px rgba(0,0,0,0.3); }
-        .location-info { background-color: var(--dark-bg); padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.2); }
+        .location-info { background-color: var(--dark-bg); padding: 15px 20px; }
         .location-info h2 { margin: 0; font-size: 24px; }
         .location-info p { margin: 0; font-size: 14px; opacity: 0.8; }
-        .station-info { background-color: var(--dark-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .station-info { background-color: var(--dark-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.2); }
         .station-name { flex-grow: 1; margin-right: 15px; }
         .station-name h3 { margin: 0; color: var(--brand-green); font-size: 18px; }
         .station-name p { margin: 0; font-size: 14px; opacity: 0.7; }
@@ -34,6 +34,8 @@
         .nav-item.active { opacity: 1; color: var(--brand-green); }
         .nav-icon { width: 24px; height: 24px; }
         #loader { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 1.2em; text-align: center; z-index: 100; }
+        
+        /* Panel Styles */
         .panel { position: fixed; bottom: 0; left: 0; width: 100%; height: calc(100vh - 200px); background-color: var(--dark-bg); z-index: 20; transform: translateY(100%); transition: transform 0.3s ease-in-out; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; border-top-left-radius: 15px; border-top-right-radius: 15px; }
         .panel.visible { transform: translateY(0); }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;}
@@ -45,32 +47,16 @@
         .list-item h3 { margin: 0; font-size: 16px; }
         .list-item p { margin: 5px 0 0; font-size: 12px; opacity: 0.7; }
         .empty-list-message { text-align: center; opacity: 0.7; margin-top: 20px; }
+
         #search-input { width: 100%; padding: 12px; background-color: var(--medium-bg); border: 1px solid #444; border-radius: 5px; color: white; font-size: 16px; box-sizing: border-box; margin-bottom: 15px; }
+
         #favorite-btn { width: 24px; height: 24px; cursor: pointer; }
         #favorite-btn path { transition: fill 0.2s ease; stroke: white; stroke-width: 2px; }
         #favorite-btn.favorited path { fill: var(--favorited-red); stroke: var(--favorited-red); }
+
         #browse-panel-stations { display: none; }
         #browse-back-btn { cursor: pointer; margin-bottom: 10px; display: inline-block; opacity: 0.8; }
         #browse-back-btn:hover { opacity: 1; }
-
-        @media (max-width: 480px) {
-            .location-info h2 { font-size: 20px; }
-            .station-info { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .station-actions { width: 100%; justify-content: space-between; }
-            .panel { height: calc(100vh - 150px); }
-        }
-        @media (min-width: 768px) {
-            #player-panel { display: flex; flex-direction: column; align-items: center; }
-            .location-info, .station-info, .nav-bar { width: 100%; max-width: 800px; box-sizing: border-box; }
-            .panel { width: 550px; max-width: 90vw; height: 75vh; max-height: 600px; bottom: 20px; left: 50%; transform: translate(-50%, calc(100% + 20px)); border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-            .panel.visible { transform: translate(-50%, 0); }
-        }
-        @media (min-width: 1024px) {
-            #side-icons { top: 50px; right: 25px; gap: 30px; }
-            .side-icon { width: 28px; height: 28px; }
-            .location-info h2 { font-size: 28px; }
-            .station-name h3 { font-size: 20px; }
-        }
     </style>
 </head>
 <body>
@@ -90,6 +76,7 @@
 
         <!-- Bottom Player and Nav -->
         <div id="player-panel">
+            <!-- NAV BAR MOVED HERE -->
             <div class="nav-bar">
                 <div id="nav-explore" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12"cy="12" r="3"></circle></svg><span>Explore</span></div>
                 <div id="nav-favorites" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Favorites</span></div>
@@ -103,7 +90,7 @@
                 <div class="station-actions">
                     <svg id="favorite-btn" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     <div class="player-controls">
-                        <svg id="play-pause-button" class="play-button" viewBox="0 0 40 40"><circle class="ring" cx="20" cy="20" r="18" stroke-width="2" fill="none"/><polygon id="play-symbol" class="symbol" points="16,12 28,20 16,28"/><g id="pause-symbol" class="symbol" style="display: none;"><rect x="13" y="12" width="4" height="16"></rect><rect x="23" y1="12" width="4" height="16"></rect></g></svg>
+                        <svg id="play-pause-button" class="play-button" viewBox="0 0 40 40"><circle class="ring" cx="20" cy="20" r="18" stroke-width="2" fill="none"/><polygon id="play-symbol" class="symbol" points="16,12 28,20 16,28"/><g id="pause-symbol" class="symbol" style="display: none;"><rect x="13" y="12" width="4" height="16"></rect><rect x="23" y="12" width="4" height="16"></rect></g></svg>
                         <svg id="next-btn" class="next-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
                     </div>
                 </div>
@@ -112,9 +99,25 @@
     </div>
     
     <!-- Panel Overlays -->
-    <div id="search-panel" class="panel"><div class="panel-header"><h2>Search Stations</h2><div class="close-panel-btn">×</div></div><input type="text" id="search-input" placeholder="Enter station, city, or country..."><div id="search-results" class="panel-content"></div></div>
-    <div id="favorites-panel" class="panel"><div class="panel-header"><h2>Your Favorites</h2><div class="close-panel-btn">×</div></div><div id="favorites-list" class="panel-content"></div></div>
-    <div id="browse-panel" class="panel"><div class="panel-header"><h2>Browse Stations</h2><div class="close-panel-btn">×</div></div><div class="panel-content"><div id="browse-panel-countries"></div><div id="browse-panel-stations"><p id="browse-back-btn">← Back to Countries</p><div id="browse-station-list"></div></div></div></div>
+    <div id="search-panel" class="panel">
+        <div class="panel-header"><h2>Search Stations</h2><div class="close-panel-btn">×</div></div>
+        <input type="text" id="search-input" placeholder="Enter station, city, or country...">
+        <div id="search-results" class="panel-content"></div>
+    </div>
+    <div id="favorites-panel" class="panel">
+        <div class="panel-header"><h2>Your Favorites</h2><div class="close-panel-btn">×</div></div>
+        <div id="favorites-list" class="panel-content"></div>
+    </div>
+    <div id="browse-panel" class="panel">
+        <div class="panel-header"><h2>Browse Stations</h2><div class="close-panel-btn">×</div></div>
+        <div class="panel-content">
+            <div id="browse-panel-countries"></div>
+            <div id="browse-panel-stations">
+                <p id="browse-back-btn">← Back to Countries</p>
+                <div id="browse-station-list"></div>
+            </div>
+        </div>
+    </div>
     
     <audio id="audio-player" crossorigin="anonymous"></audio>
 
@@ -159,7 +162,8 @@
         let favorites = [];
         let userLocation = null;
         let stationsReady = false;
-        let autoPlayDone = false;
+        // *** NEW: This flag controls the auto-selection feature ***
+        let selectionFeatureEnabled = false;
 
         function latLonToVector3(lat, lon, r) {
             const phi = (90 - lat) * (Math.PI / 180), theta = (lon + 180) * (Math.PI / 180);
@@ -179,15 +183,27 @@
                         const marker = new THREE.Mesh(markerGeo, markerMat.clone());
                         marker.position.copy(pos);
                         marker.lookAt(0, 0, 0);
-                        marker.userData = { name: station.name || 'Unknown', country: station.country || 'Unknown', city: station.state || 'View all stations', streamUrl: station.url_resolved, uuid: station.stationuuid, geo_lat: station.geo_lat, geo_long: station.geo_long };
+                        marker.userData = { 
+                            name: station.name || 'Unknown', 
+                            country: station.country || 'Unknown', 
+                            city: station.state || 'View all stations', 
+                            streamUrl: station.url_resolved,
+                            uuid: station.stationuuid,
+                            geo_lat: station.geo_lat, 
+                            geo_long: station.geo_long
+                        };
                         stationMarkers.add(marker);
                     }
                 });
                 document.getElementById('loader').style.display = 'none';
                 loadFavorites();
                 stationsReady = true;
-                tryAutoPlayInitialStation();
-            } catch (error) { console.error('Failed to load radio stations:', error); document.getElementById('loader').textContent = "Error loading stations." }
+                // Just get the location, don't do anything with it yet.
+                requestUserLocation(false); 
+            } catch (error) { 
+                console.error('Failed to load radio stations:', error); 
+                document.getElementById('loader').textContent = "Error loading stations."
+            }
         }
 
         // --- 5. SELECTION & PLAYER LOGIC ---
@@ -220,20 +236,25 @@
             clearTimeout(selectionTimer);
             selectionTimer = setTimeout(() => playStation(selectedStationMesh.userData), 500);
         }
-
+        
         function checkSelection() {
-            if (controls.isDragging || isRotating || autoPlayDone) return; 
+            // *** FIX: This will only run if the feature has been enabled by the location button ***
+            if (!selectionFeatureEnabled || controls.isDragging || isAnimating) return; 
+
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const intersects = raycaster.intersectObjects(stationMarkers.children);
 
             if (intersects.length > 0 && intersects[0].distance < globeRadius * 2.2) {
                 const newSelected = intersects[0].object;
-                if (newSelected !== selectedStationMesh) updateSelection(newSelected);
+                if (newSelected !== selectedStationMesh) {
+                    updateSelection(newSelected);
+                }
             } else {
                 if (selectedStationMesh) {
                     selectedStationMesh.material.color.set(defaultColor);
                     selectedStationMesh = null;
-                    clearTimeout(selectionTimer); audioPlayer.pause();
+                    clearTimeout(selectionTimer);
+                    audioPlayer.pause();
                     locationNameEl.textContent = 'Radio Globe';
                     locationSubtitleEl.textContent = 'Tune in by moving the globe';
                     stationNameEl.textContent = 'Select a station';
@@ -251,53 +272,30 @@
         function updateFavoriteIcon() { if (selectedStationMesh && isFavorite(selectedStationMesh.userData.uuid)) favoriteBtn.classList.add('favorited'); else favoriteBtn.classList.remove('favorited'); }
         favoriteBtn.addEventListener('click', toggleFavorite);
         
-        // --- 7. LOCATION & PLAY LOGIC (REFACTORED FOR BUG FIX) ---
-        
-        // **NEW** This function now contains the core logic to center the globe.
-        // It can be called anytime, without being blocked by flags.
-        function centerOnLocation(lat, lon) {
-            if (!stationsReady) {
-                console.log("Stations not ready yet, cannot center.");
-                return;
-            }
-            const nearest = findNearestStation(lat, lon);
-            if (nearest) {
-                console.log("Centering on nearest station:", nearest.userData.name);
-                pointCameraAt(nearest);
-            } else {
-                alert("Could not find a radio station near your current location.");
-            }
-        }
-
-        // **MODIFIED** This function now just gets the location and calls the new centering function.
-        function requestUserLocation() {
+        // --- 7. LOCATION LOGIC ---
+        function requestUserLocation(isManualRequest) {
             if (!navigator.geolocation) {
-                alert("Geolocation is not supported by this browser.");
+                if (isManualRequest) alert("Geolocation is not supported by your browser.");
                 return;
             }
-            locationSubtitleEl.textContent = "Finding your location...";
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
-                    // On success, call the new reusable function
-                    centerOnLocation(userLocation.lat, userLocation.lon);
-                    // On subsequent clicks, this also marks interaction so the globe doesn't drift
-                    autoPlayDone = true; 
+                    // Only go to the location if it was a manual button click.
+                    if (isManualRequest) {
+                        goToNearestStation();
+                    }
                 },
                 () => {
-                    alert("Could not get your location. Please check browser permissions.");
-                    // Restore default text on failure
-                    if (!selectedStationMesh) locationSubtitleEl.textContent = "Tune in by moving the globe";
+                    if (isManualRequest) alert("Could not get your location. Please enable location services.");
                 }
             );
         }
-
-        // **MODIFIED** This function's only job is to run the auto-play ONCE.
-        function tryAutoPlayInitialStation() {
-            if (userLocation && stationsReady && !autoPlayDone) {
-                autoPlayDone = true; // Set the flag to prevent this from running again automatically
-                centerOnLocation(userLocation.lat, userLocation.lon); // Use the new function for the initial centering
-            }
+        
+        function goToNearestStation() {
+            if (!userLocation || !stationsReady) return;
+            const nearest = findNearestStation(userLocation.lat, userLocation.lon);
+            if (nearest) pointCameraAt(nearest);
         }
 
         function findNearestStation(userLat, userLon) {
@@ -315,25 +313,43 @@
         }
 
         function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const R = 6371; // Radius of Earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); return R * c;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
 
         // --- 8. UI EVENT LISTENERS ---
-        document.getElementById('play-pause-button').addEventListener('click', () => { autoPlayDone = true; audioPlayer.paused && selectedStationMesh ? audioPlayer.play().catch(e => console.error(e)) : audioPlayer.pause(); });
+        document.getElementById('play-pause-button').addEventListener('click', () => { audioPlayer.paused && selectedStationMesh ? audioPlayer.play().catch(e => console.error(e)) : audioPlayer.pause(); });
         audioPlayer.addEventListener('play', () => { document.getElementById('play-symbol').style.display = 'none'; document.getElementById('pause-symbol').style.display = 'block'; });
         audioPlayer.addEventListener('pause', () => { document.getElementById('play-symbol').style.display = 'block'; document.getElementById('pause-symbol').style.display = 'none'; });
         audioPlayer.addEventListener('waiting', () => { stationSourceEl.textContent = 'Loading stream...'; });
         audioPlayer.addEventListener('playing', () => { if (selectedStationMesh) stationSourceEl.textContent = `Broadcasting from ${selectedStationMesh.userData.country}`; });
-        document.getElementById('next-btn').addEventListener('click', () => { autoPlayDone = true; if (!selectedStationMesh || stationMarkers.children.length === 0) return; const idx = stationMarkers.children.indexOf(selectedStationMesh); const next = (idx + 1) % stationMarkers.children.length; pointCameraAt(stationMarkers.children[next]); });
+        document.getElementById('next-btn').addEventListener('click', () => { selectionFeatureEnabled = true; if (stationMarkers.children.length === 0) return; let nextIndex = 0; if (selectedStationMesh) { const currentIndex = stationMarkers.children.indexOf(selectedStationMesh); nextIndex = (currentIndex + 1) % stationMarkers.children.length; } pointCameraAt(stationMarkers.children[nextIndex]); });
         
-        let targetRotation = new THREE.Quaternion(); let isRotating = false;
-        function pointCameraAt(targetMesh) { updateSelection(targetMesh); const R = new THREE.Matrix4().lookAt(camera.position, targetMesh.position, camera.up); targetRotation.setFromRotationMatrix(R); isRotating = true; }
-        document.getElementById('share-btn').addEventListener('click', async () => { try { await navigator.share({ title: '3D Radio Globe', text: 'Listen to radio stations!', url: window.location.href }); } catch(err) { alert('Share not supported.'); } });
-        document.getElementById('center-btn').addEventListener('click', requestUserLocation);
+        let animationTarget = { position: new THREE.Vector3(), target: new THREE.Vector3() };
+        let isAnimating = false;
+
+        function pointCameraAt(targetMesh) {
+            updateSelection(targetMesh);
+            const newCamPos = targetMesh.position.clone().normalize().multiplyScalar(camera.position.length());
+            animationTarget.position.copy(newCamPos);
+            animationTarget.target.set(0, 0, 0);
+            isAnimating = true;
+        }
+
+        document.getElementById('share-btn').addEventListener('click', async () => { try { await navigator.share({ title: 'Earth Radio', text: 'Listen to live radio from around the world!', url: window.location.href }); } catch(err) { alert('Share feature not available on this device.'); } });
+        
+        // *** FIX: This button now ENABLES the selection feature and then works ***
+        document.getElementById('center-btn').addEventListener('click', () => {
+            selectionFeatureEnabled = true; // Unlock the feature!
+            requestUserLocation(true); // Now find and go to the location.
+        }); 
+        
         document.getElementById('lock-btn').addEventListener('click', (e) => { controls.enabled = !controls.enabled; e.currentTarget.style.opacity = controls.enabled ? '1' : '0.5'; });
-        document.getElementById('random-btn').addEventListener('click', () => { autoPlayDone = true; if (stationMarkers.children.length > 0) pointCameraAt(stationMarkers.children[Math.floor(Math.random() * stationMarkers.children.length)]); });
+        document.getElementById('random-btn').addEventListener('click', () => { selectionFeatureEnabled = true; if (stationMarkers.children.length > 0) pointCameraAt(stationMarkers.children[Math.floor(Math.random() * stationMarkers.children.length)]); });
 
         // --- 9. PANEL MANAGEMENT ---
         const allPanels = document.querySelectorAll('.panel'); const allNavItems = document.querySelectorAll('.nav-item');
@@ -341,28 +357,36 @@
         function openPanel(panelId, navId) { hideAllPanels(); document.getElementById(panelId).classList.add('visible'); allNavItems.forEach(n => n.classList.remove('active')); document.getElementById(navId).classList.add('active'); }
         document.querySelectorAll('.close-panel-btn').forEach(btn => btn.addEventListener('click', hideAllPanels));
         document.getElementById('nav-explore').addEventListener('click', hideAllPanels); document.getElementById('nav-settings').addEventListener('click', () => alert('Settings feature coming soon!'));
+        
         document.getElementById('nav-search').addEventListener('click', () => { openPanel('search-panel', 'nav-search'); document.getElementById('search-input').focus(); });
         document.getElementById('search-input').addEventListener('input', (e) => { const query = e.target.value.toLowerCase().trim(); const resultsEl = document.getElementById('search-results'); resultsEl.innerHTML = ''; if (query.length < 2) return; const results = stationMarkers.children.filter(marker => marker.userData.name.toLowerCase().includes(query) || marker.userData.city.toLowerCase().includes(query) || marker.userData.country.toLowerCase().includes(query)).slice(0, 50); if (results.length === 0) { resultsEl.innerHTML = '<p class="empty-list-message">No results found.</p>'; } else { results.forEach(marker => createListItem(marker, resultsEl)); } });
         document.getElementById('nav-favorites').addEventListener('click', () => { openPanel('favorites-panel', 'nav-favorites'); const listEl = document.getElementById('favorites-list'); listEl.innerHTML = ''; if (favorites.length === 0) { listEl.innerHTML = '<p class="empty-list-message">No favorites yet. Click the heart icon to add one.</p>'; } else { const favMarkers = favorites.map(uuid => stationMarkers.children.find(m => m.userData.uuid === uuid)).filter(Boolean); favMarkers.forEach(marker => createListItem(marker, listEl)); } });
+        
         function populateBrowseCountries() { const countriesEl = document.getElementById('browse-panel-countries'); if (countriesEl.children.length > 0) return; const countries = [...new Set(stationMarkers.children.map(m => m.userData.country))].sort(); countries.forEach(country => { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${country}</h3>`; item.dataset.country = country; countriesEl.appendChild(item); }); }
         document.getElementById('nav-browse').addEventListener('click', () => { openPanel('browse-panel', 'nav-browse'); populateBrowseCountries(); document.getElementById('browse-panel-stations').style.display = 'none'; document.getElementById('browse-panel-countries').style.display = 'block'; });
         document.getElementById('browse-panel-countries').addEventListener('click', e => { const item = e.target.closest('.list-item'); if (!item) return; const country = item.dataset.country; const stationListEl = document.getElementById('browse-station-list'); stationListEl.innerHTML = ''; const stations = stationMarkers.children.filter(m => m.userData.country === country); stations.forEach(marker => createListItem(marker, stationListEl)); document.getElementById('browse-panel-countries').style.display = 'none'; document.getElementById('browse-panel-stations').style.display = 'block'; });
         document.getElementById('browse-back-btn').addEventListener('click', () => { document.getElementById('browse-panel-countries').style.display = 'block'; document.getElementById('browse-panel-stations').style.display = 'none'; });
-        function createListItem(marker, parentEl) { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${marker.userData.name}</h3><p>${marker.userData.city}, ${marker.userData.country}</p>`; item.addEventListener('click', () => { autoPlayDone = true; pointCameraAt(marker); hideAllPanels(); }); parentEl.appendChild(item); }
+        
+        function createListItem(marker, parentEl) { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${marker.userData.name}</h3><p>${marker.userData.city}, ${marker.userData.country}</p>`; item.addEventListener('click', () => { selectionFeatureEnabled = true; pointCameraAt(marker); hideAllPanels(); }); parentEl.appendChild(item); }
 
         // --- 10. ANIMATION LOOP ---
         function animate() {
             requestAnimationFrame(animate);
-            if(isRotating) { camera.quaternion.slerp(targetRotation, 0.05); if(camera.quaternion.angleTo(targetRotation) < 0.01) { isRotating = false; } }
-            if (controls.isDragging || isRotating) { autoPlayDone = true; }
+            if (isAnimating) {
+                camera.position.lerp(animationTarget.position, 0.07);
+                controls.target.lerp(animationTarget.target, 0.07);
+                if (camera.position.distanceTo(animationTarget.position) < 0.01) {
+                    isAnimating = false;
+                    camera.position.copy(animationTarget.position);
+                    controls.target.copy(animationTarget.target);
+                }
+            }
             controls.update();
-            checkSelection();
+            checkSelection(); 
             renderer.render(scene, camera);
         }
 
-        // --- 11. INITIALIZATION ---
-        // On initial load, we still ask for location, which will then trigger tryAutoPlayInitialStation
-        requestUserLocation(); 
+        // --- 11. INITIALIZATION & RESIZE ---
         loadRadioStations();
         animate();
         window.addEventListener('resize', () => { camera.aspect = globeContainer.clientWidth / globeContainer.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(globeContainer.clientWidth, globeContainer.clientHeight); });
