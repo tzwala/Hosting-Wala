@@ -8,7 +8,14 @@
         :root { --brand-green: #00ff00; --dark-bg: #1c1c1e; --medium-bg: #2c2c2e; --favorited-red: #ff453a;}
         body, html { margin: 0; overflow: hidden; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: white; height: 100%; }
         #app-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; background-color: transparent; }
-        #globe-area { flex-grow: 1; position: relative; }
+        
+        /* --- THIS IS THE FIX --- */
+        #globe-area { 
+            flex-grow: 1; 
+            position: relative; 
+            min-height: 0; /* Prevents the flex item from overflowing its container */
+        }
+        
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: grab; }
         #selector-ring { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border: 2px dashed white; opacity: 0.8; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
         #side-icons { position: absolute; top: 40px; right: 15px; display: flex; flex-direction: column; gap: 25px; z-index: 10; }
@@ -59,54 +66,19 @@
         #browse-back-btn:hover { opacity: 1; }
 
         /* --- Responsive Design --- */
-
-        /* Small Phones */
         @media (max-width: 480px) {
             .location-info h2 { font-size: 20px; }
-            .station-info {
-                flex-direction: column; /* Stack station name and controls */
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .station-actions {
-                width: 100%;
-                justify-content: space-between; /* Space out heart and player controls */
-            }
+            .station-info { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .station-actions { width: 100%; justify-content: space-between; }
             .panel { height: calc(100vh - 150px); }
         }
-
-        /* Tablet and Small Desktops */
         @media (min-width: 768px) {
-            #player-panel {
-                display: flex;
-                flex-direction: column;
-                align-items: center; /* Center the content blocks */
-            }
-            .location-info, .station-info, .nav-bar {
-                width: 100%;
-                max-width: 800px; /* Prevent player from getting too wide */
-                box-sizing: border-box;
-            }
+            #player-panel { display: flex; flex-direction: column; align-items: center; }
+            .location-info, .station-info, .nav-bar { width: 100%; max-width: 800px; box-sizing: border-box; }
             .nav-bar { border-radius: 0 0 10px 10px; }
-
-            /* Make panels float in the center instead of full-width */
-            .panel {
-                width: 550px;
-                max-width: 90vw;
-                height: 75vh;
-                max-height: 600px;
-                bottom: 20px; /* Position from bottom */
-                left: 50%;
-                transform: translate(-50%, calc(100% + 20px)); /* Hide below screen */
-                border-radius: 15px; /* All corners rounded */
-                box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            }
-            .panel.visible {
-                transform: translate(-50%, 0); /* Slide into view */
-            }
+            .panel { width: 550px; max-width: 90vw; height: 75vh; max-height: 600px; bottom: 20px; left: 50%; transform: translate(-50%, calc(100% + 20px)); border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+            .panel.visible { transform: translate(-50%, 0); }
         }
-
-        /* Large Desktops */
         @media (min-width: 1024px) {
             #side-icons { top: 50px; right: 25px; gap: 30px; }
             .side-icon { width: 28px; height: 28px; }
