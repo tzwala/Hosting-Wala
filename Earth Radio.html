@@ -76,7 +76,7 @@
 
         <!-- Bottom Player and Nav -->
         <div id="player-panel">
-            <!-- NAV BAR MOVED HERE -->
+            <!-- NAV BAR -->
             <div class="nav-bar">
                 <div id="nav-explore" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12"cy="12" r="3"></circle></svg><span>Explore</span></div>
                 <div id="nav-favorites" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Favorites</span></div>
@@ -84,7 +84,10 @@
                 <div id="nav-search" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span>Search</span></div>
                 <div id="nav-settings" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg><span>Settings</span></div>
             </div>
-            <div class="location-info"><h2 id="location-name">Radio Globe</h2><p id="location-subtitle">Tune in by moving the globe</p></div>
+            
+            <!-- *** MODIFICATION: The two DIV blocks below have been swapped *** -->
+            
+            <!-- Station Info (now on top) -->
             <div class="station-info">
                 <div class="station-name"><h3 id="station-name">Select a station</h3><p id="station-source">to begin</p></div>
                 <div class="station-actions">
@@ -95,6 +98,10 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Location Info (now on bottom) -->
+            <div class="location-info"><h2 id="location-name">Radio Globe</h2><p id="location-subtitle">Tune in by moving the globe</p></div>
+
         </div>
     </div>
     
