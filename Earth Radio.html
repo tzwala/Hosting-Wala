@@ -292,4 +292,112 @@
         // --- 6. FAVORITES LOGIC ---
         function loadFavorites() { favorites = JSON.parse(localStorage.getItem('radioGlobeFavorites') || '[]'); updateFavoriteIcon(); }
         function saveFavorites() { localStorage.setItem('radioGlobeFavorites', JSON.stringify(favorites)); }
-        function toggleFavorite() { if (!selectedStationMesh) return; const uuid = selectedStationMesh.userData.uuid; const idx = favorites.indexOf(uuid); if (idx > -1) favorites.splice(idx, 1); else favorites.pu
+        function toggleFavorite() { if (!selectedStationMesh) return; const uuid = selectedStationMesh.userData.uuid; const idx = favorites.indexOf(uuid); if (idx > -1) favorites.splice(idx, 1); else favorites.push(uuid); saveFavorites(); updateFavoriteIcon(); }
+        function isFavorite(uuid) { return favorites.includes(uuid); }
+        function updateFavoriteIcon() { if (selectedStationMesh && isFavorite(selectedStationMesh.userData.uuid)) favoriteBtn.classList.add('favorited'); else favoriteBtn.classList.remove('favorited'); }
+        favoriteBtn.addEventListener('click', toggleFavorite);
+        
+        // --- 7. AUTO-LOCATION & PLAY LOGIC ---
+        function requestUserLocation() {
+            if (!navigator.geolocation) {
+                console.log("Geolocation is not supported by this browser.");
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
+                    tryAutoPlayInitialStation(); // Attempt to play after location is found
+                },
+                () => console.log("User denied geolocation.")
+            );
+        }
+
+        function tryAutoPlayInitialStation() {
+            if (userLocation && stationsReady && !autoPlayDone) {
+                autoPlayDone = true; // Ensure this runs only once
+                const nearest = findNearestStation(userLocation.lat, userLocation.lon);
+                if (nearest) {
+                    console.log("Found nearest station:", nearest.userData.name);
+                    pointCameraAt(nearest);
+                } else {
+                    console.log("Could not find a station near your location.");
+                }
+            }
+        }
+
+        function findNearestStation(userLat, userLon) {
+            let minDistance = Infinity;
+            let nearestMarker = null;
+            stationMarkers.children.forEach(marker => {
+                const { geo_lat, geo_long } = marker.userData;
+                const distance = haversineDistance(userLat, userLon, geo_lat, geo_long);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestMarker = marker;
+                }
+            });
+            return nearestMarker;
+        }
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the Earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        }
+
+        // --- 8. UI EVENT LISTENERS ---
+        // Player & Side Icons
+        document.getElementById('play-pause-button').addEventListener('click', () => { autoPlayDone = true; audioPlayer.paused && selectedStationMesh ? audioPlayer.play().catch(e => console.error(e)) : audioPlayer.pause(); });
+        audioPlayer.addEventListener('play', () => { document.getElementById('play-symbol').style.display = 'none'; document.getElementById('pause-symbol').style.display = 'block'; });
+        audioPlayer.addEventListener('pause', () => { document.getElementById('play-symbol').style.display = 'block'; document.getElementById('pause-symbol').style.display = 'none'; });
+        audioPlayer.addEventListener('waiting', () => { stationSourceEl.textContent = 'Loading stream...'; });
+        audioPlayer.addEventListener('playing', () => { if (selectedStationMesh) stationSourceEl.textContent = `Broadcasting from ${selectedStationMesh.userData.country}`; });
+        document.getElementById('next-btn').addEventListener('click', () => { autoPlayDone = true; if (!selectedStationMesh || stationMarkers.children.length === 0) return; const idx = stationMarkers.children.indexOf(selectedStationMesh); const next = (idx + 1) % stationMarkers.children.length; pointCameraAt(stationMarkers.children[next]); });
+        
+        let targetRotation = new THREE.Quaternion(); let isRotating = false;
+        function pointCameraAt(targetMesh) { updateSelection(targetMesh); const R = new THREE.Matrix4().lookAt(camera.position, targetMesh.position, camera.up); targetRotation.setFromRotationMatrix(R); isRotating = true; }
+        document.getElementById('share-btn').addEventListener('click', async () => { try { await navigator.share({ title: '3D Radio Globe', text: 'Listen to radio stations!', url: window.location.href }); } catch(err) { alert('Share not supported.'); } });
+        document.getElementById('center-btn').addEventListener('click', requestUserLocation); // Re-purpose center button
+        document.getElementById('lock-btn').addEventListener('click', (e) => { controls.enabled = !controls.enabled; e.currentTarget.style.opacity = controls.enabled ? '1' : '0.5'; });
+        document.getElementById('random-btn').addEventListener('click', () => { autoPlayDone = true; if (stationMarkers.children.length > 0) pointCameraAt(stationMarkers.children[Math.floor(Math.random() * stationMarkers.children.length)]); });
+
+        // --- 9. PANEL MANAGEMENT ---
+        const allPanels = document.querySelectorAll('.panel'); const allNavItems = document.querySelectorAll('.nav-item');
+        function hideAllPanels() { allPanels.forEach(p => p.classList.remove('visible')); allNavItems.forEach(n => n.classList.remove('active')); document.getElementById('nav-explore').classList.add('active'); }
+        function openPanel(panelId, navId) { hideAllPanels(); document.getElementById(panelId).classList.add('visible'); allNavItems.forEach(n => n.classList.remove('active')); document.getElementById(navId).classList.add('active'); }
+        document.querySelectorAll('.close-panel-btn').forEach(btn => btn.addEventListener('click', hideAllPanels));
+        document.getElementById('nav-explore').addEventListener('click', hideAllPanels); document.getElementById('nav-settings').addEventListener('click', () => alert('Settings feature coming soon!'));
+        
+        document.getElementById('nav-search').addEventListener('click', () => { openPanel('search-panel', 'nav-search'); document.getElementById('search-input').focus(); });
+        document.getElementById('search-input').addEventListener('input', (e) => { const query = e.target.value.toLowerCase().trim(); const resultsEl = document.getElementById('search-results'); resultsEl.innerHTML = ''; if (query.length < 2) return; const results = stationMarkers.children.filter(marker => marker.userData.name.toLowerCase().includes(query) || marker.userData.city.toLowerCase().includes(query) || marker.userData.country.toLowerCase().includes(query)).slice(0, 50); if (results.length === 0) { resultsEl.innerHTML = '<p class="empty-list-message">No results found.</p>'; } else { results.forEach(marker => createListItem(marker, resultsEl)); } });
+        document.getElementById('nav-favorites').addEventListener('click', () => { openPanel('favorites-panel', 'nav-favorites'); const listEl = document.getElementById('favorites-list'); listEl.innerHTML = ''; if (favorites.length === 0) { listEl.innerHTML = '<p class="empty-list-message">No favorites yet. Click the heart icon to add one.</p>'; } else { const favMarkers = favorites.map(uuid => stationMarkers.children.find(m => m.userData.uuid === uuid)).filter(Boolean); favMarkers.forEach(marker => createListItem(marker, listEl)); } });
+        
+        function populateBrowseCountries() { const countriesEl = document.getElementById('browse-panel-countries'); if (countriesEl.children.length > 0) return; const countries = [...new Set(stationMarkers.children.map(m => m.userData.country))].sort(); countries.forEach(country => { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${country}</h3>`; item.dataset.country = country; countriesEl.appendChild(item); }); }
+        document.getElementById('nav-browse').addEventListener('click', () => { openPanel('browse-panel', 'nav-browse'); populateBrowseCountries(); document.getElementById('browse-panel-stations').style.display = 'none'; document.getElementById('browse-panel-countries').style.display = 'block'; });
+        document.getElementById('browse-panel-countries').addEventListener('click', e => { const item = e.target.closest('.list-item'); if (!item) return; const country = item.dataset.country; const stationListEl = document.getElementById('browse-station-list'); stationListEl.innerHTML = ''; const stations = stationMarkers.children.filter(m => m.userData.country === country); stations.forEach(marker => createListItem(marker, stationListEl)); document.getElementById('browse-panel-countries').style.display = 'none'; document.getElementById('browse-panel-stations').style.display = 'block'; });
+        document.getElementById('browse-back-btn').addEventListener('click', () => { document.getElementById('browse-panel-countries').style.display = 'block'; document.getElementById('browse-panel-stations').style.display = 'none'; });
+        
+        function createListItem(marker, parentEl) { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${marker.userData.name}</h3><p>${marker.userData.city}, ${marker.userData.country}</p>`; item.addEventListener('click', () => { autoPlayDone = true; pointCameraAt(marker); hideAllPanels(); }); parentEl.appendChild(item); }
+
+        // --- 10. ANIMATION LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            if(isRotating) { camera.quaternion.slerp(targetRotation, 0.05); if(camera.quaternion.angleTo(targetRotation) < 0.01) { isRotating = false; } }
+            // Disable auto-selection if user starts interacting
+            if (controls.isDragging || isRotating) { autoPlayDone = true; }
+            controls.update();
+            checkSelection(); // This now respects the autoPlayDone flag
+            renderer.render(scene, camera);
+        }
+
+        // --- 11. INITIALIZATION & RESIZE ---
+        loadRadioStations();
+        requestUserLocation();
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = globeContainer.clientWidth / globeContainer.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(globeContainer.clientWidth, globeContainer.clientHeight); });
+    </script>
+</body>
+</html>
