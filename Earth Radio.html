@@ -8,14 +8,7 @@
         :root { --brand-green: #00ff00; --dark-bg: #1c1c1e; --medium-bg: #2c2c2e; --favorited-red: #ff453a;}
         body, html { margin: 0; overflow: hidden; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: white; height: 100%; }
         #app-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; background-color: transparent; }
-        
-        /* --- THIS IS THE FIX --- */
-        #globe-area { 
-            flex-grow: 1; 
-            position: relative; 
-            min-height: 0; /* Prevents the flex item from overflowing its container */
-        }
-        
+        #globe-area { flex-grow: 1; position: relative; min-height: 0; }
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: grab; }
         #selector-ring { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border: 2px dashed white; opacity: 0.8; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
         #side-icons { position: absolute; top: 40px; right: 15px; display: flex; flex-direction: column; gap: 25px; z-index: 10; }
@@ -36,7 +29,16 @@
         .player-controls .next-icon { width: 24px; height: 24px; }
         .play-button .ring { stroke: var(--brand-green); }
         .play-button .symbol { fill: var(--brand-green); }
-        .nav-bar { background-color: var(--dark-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--medium-bg); }
+        
+        /* Style adjustment for nav-bar's new position */
+        .nav-bar {
+            background-color: var(--dark-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--medium-bg); /* Changed from border-top */
+        }
+
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; opacity: 0.7; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--brand-green); }
         .nav-icon { width: 24px; height: 24px; }
@@ -75,7 +77,6 @@
         @media (min-width: 768px) {
             #player-panel { display: flex; flex-direction: column; align-items: center; }
             .location-info, .station-info, .nav-bar { width: 100%; max-width: 800px; box-sizing: border-box; }
-            .nav-bar { border-radius: 0 0 10px 10px; }
             .panel { width: 550px; max-width: 90vw; height: 75vh; max-height: 600px; bottom: 20px; left: 50%; transform: translate(-50%, calc(100% + 20px)); border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
             .panel.visible { transform: translate(-50%, 0); }
         }
@@ -104,23 +105,25 @@
 
         <!-- Bottom Player and Nav -->
         <div id="player-panel">
-            <div class="location-info"><h2 id="location-name">Radio Globe</h2><p id="location-subtitle">Tune in by moving the globe</p></div>
-            <div class="station-info">
-                <div class="station-name"><h3 id="station-name">Select a station</h3><p id="station-source">to begin</p></div>
-                <div class="station-actions">
-                    <svg id="favorite-btn" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    <div class="player-controls">
-                        <svg id="play-pause-button" class="play-button" viewBox="0 0 40 40"><circle class="ring" cx="20" cy="20" r="18" stroke-width="2" fill="none"/><polygon id="play-symbol" class="symbol" points="16,12 28,20 16,28"/><g id="pause-symbol" class="symbol" style="display: none;"><rect x="13" y="12" width="4" height="16"></rect><rect x="23" y="12" width="4" height="16"></rect></g></svg>
-                        <svg id="next-btn" class="next-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-                    </div>
-                </div>
-            </div>
+            <!-- NAV-BAR MOVED HERE FROM THE BOTTOM -->
             <div class="nav-bar">
                 <div id="nav-explore" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12"cy="12" r="3"></circle></svg><span>Explore</span></div>
                 <div id="nav-favorites" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Favorites</span></div>
                 <div id="nav-browse" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg><span>Browse</span></div>
                 <div id="nav-search" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span>Search</span></div>
                 <div id="nav-settings" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg><span>Settings</span></div>
+            </div>
+
+            <div class="location-info"><h2 id="location-name">Radio Globe</h2><p id="location-subtitle">Tune in by moving the globe</p></div>
+            <div class="station-info">
+                <div class="station-name"><h3 id="station-name">Select a station</h3><p id="station-source">to begin</p></div>
+                <div class="station-actions">
+                    <svg id="favorite-btn" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <div class="player-controls">
+                        <svg id="play-pause-button" class="play-button" viewBox="0 0 40 40"><circle class="ring" cx="20" cy="20" r="18" stroke-width="2" fill="none"/><polygon id="play-symbol" class="symbol" points="16,12 28,20 16,28"/><g id="pause-symbol" class="symbol" style="display: none;"><rect x="13" y="12" width="4" height="16"></rect><rect x="23" y1="12" width="4" height="16"></rect></g></svg>
+                        <svg id="next-btn" class="next-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -289,112 +292,4 @@
         // --- 6. FAVORITES LOGIC ---
         function loadFavorites() { favorites = JSON.parse(localStorage.getItem('radioGlobeFavorites') || '[]'); updateFavoriteIcon(); }
         function saveFavorites() { localStorage.setItem('radioGlobeFavorites', JSON.stringify(favorites)); }
-        function toggleFavorite() { if (!selectedStationMesh) return; const uuid = selectedStationMesh.userData.uuid; const idx = favorites.indexOf(uuid); if (idx > -1) favorites.splice(idx, 1); else favorites.push(uuid); saveFavorites(); updateFavoriteIcon(); }
-        function isFavorite(uuid) { return favorites.includes(uuid); }
-        function updateFavoriteIcon() { if (selectedStationMesh && isFavorite(selectedStationMesh.userData.uuid)) favoriteBtn.classList.add('favorited'); else favoriteBtn.classList.remove('favorited'); }
-        favoriteBtn.addEventListener('click', toggleFavorite);
-        
-        // --- 7. AUTO-LOCATION & PLAY LOGIC ---
-        function requestUserLocation() {
-            if (!navigator.geolocation) {
-                console.log("Geolocation is not supported by this browser.");
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    userLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
-                    tryAutoPlayInitialStation(); // Attempt to play after location is found
-                },
-                () => console.log("User denied geolocation.")
-            );
-        }
-
-        function tryAutoPlayInitialStation() {
-            if (userLocation && stationsReady && !autoPlayDone) {
-                autoPlayDone = true; // Ensure this runs only once
-                const nearest = findNearestStation(userLocation.lat, userLocation.lon);
-                if (nearest) {
-                    console.log("Found nearest station:", nearest.userData.name);
-                    pointCameraAt(nearest);
-                } else {
-                    console.log("Could not find a station near your location.");
-                }
-            }
-        }
-
-        function findNearestStation(userLat, userLon) {
-            let minDistance = Infinity;
-            let nearestMarker = null;
-            stationMarkers.children.forEach(marker => {
-                const { geo_lat, geo_long } = marker.userData;
-                const distance = haversineDistance(userLat, userLon, geo_lat, geo_long);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestMarker = marker;
-                }
-            });
-            return nearestMarker;
-        }
-
-        function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of the Earth in km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distance in km
-        }
-
-        // --- 8. UI EVENT LISTENERS ---
-        // Player & Side Icons
-        document.getElementById('play-pause-button').addEventListener('click', () => { autoPlayDone = true; audioPlayer.paused && selectedStationMesh ? audioPlayer.play().catch(e => console.error(e)) : audioPlayer.pause(); });
-        audioPlayer.addEventListener('play', () => { document.getElementById('play-symbol').style.display = 'none'; document.getElementById('pause-symbol').style.display = 'block'; });
-        audioPlayer.addEventListener('pause', () => { document.getElementById('play-symbol').style.display = 'block'; document.getElementById('pause-symbol').style.display = 'none'; });
-        audioPlayer.addEventListener('waiting', () => { stationSourceEl.textContent = 'Loading stream...'; });
-        audioPlayer.addEventListener('playing', () => { if (selectedStationMesh) stationSourceEl.textContent = `Broadcasting from ${selectedStationMesh.userData.country}`; });
-        document.getElementById('next-btn').addEventListener('click', () => { autoPlayDone = true; if (!selectedStationMesh || stationMarkers.children.length === 0) return; const idx = stationMarkers.children.indexOf(selectedStationMesh); const next = (idx + 1) % stationMarkers.children.length; pointCameraAt(stationMarkers.children[next]); });
-        
-        let targetRotation = new THREE.Quaternion(); let isRotating = false;
-        function pointCameraAt(targetMesh) { updateSelection(targetMesh); const R = new THREE.Matrix4().lookAt(camera.position, targetMesh.position, camera.up); targetRotation.setFromRotationMatrix(R); isRotating = true; }
-        document.getElementById('share-btn').addEventListener('click', async () => { try { await navigator.share({ title: '3D Radio Globe', text: 'Listen to radio stations!', url: window.location.href }); } catch(err) { alert('Share not supported.'); } });
-        document.getElementById('center-btn').addEventListener('click', requestUserLocation); // Re-purpose center button
-        document.getElementById('lock-btn').addEventListener('click', (e) => { controls.enabled = !controls.enabled; e.currentTarget.style.opacity = controls.enabled ? '1' : '0.5'; });
-        document.getElementById('random-btn').addEventListener('click', () => { autoPlayDone = true; if (stationMarkers.children.length > 0) pointCameraAt(stationMarkers.children[Math.floor(Math.random() * stationMarkers.children.length)]); });
-
-        // --- 9. PANEL MANAGEMENT ---
-        const allPanels = document.querySelectorAll('.panel'); const allNavItems = document.querySelectorAll('.nav-item');
-        function hideAllPanels() { allPanels.forEach(p => p.classList.remove('visible')); allNavItems.forEach(n => n.classList.remove('active')); document.getElementById('nav-explore').classList.add('active'); }
-        function openPanel(panelId, navId) { hideAllPanels(); document.getElementById(panelId).classList.add('visible'); allNavItems.forEach(n => n.classList.remove('active')); document.getElementById(navId).classList.add('active'); }
-        document.querySelectorAll('.close-panel-btn').forEach(btn => btn.addEventListener('click', hideAllPanels));
-        document.getElementById('nav-explore').addEventListener('click', hideAllPanels); document.getElementById('nav-settings').addEventListener('click', () => alert('Settings feature coming soon!'));
-        
-        document.getElementById('nav-search').addEventListener('click', () => { openPanel('search-panel', 'nav-search'); document.getElementById('search-input').focus(); });
-        document.getElementById('search-input').addEventListener('input', (e) => { const query = e.target.value.toLowerCase().trim(); const resultsEl = document.getElementById('search-results'); resultsEl.innerHTML = ''; if (query.length < 2) return; const results = stationMarkers.children.filter(marker => marker.userData.name.toLowerCase().includes(query) || marker.userData.city.toLowerCase().includes(query) || marker.userData.country.toLowerCase().includes(query)).slice(0, 50); if (results.length === 0) { resultsEl.innerHTML = '<p class="empty-list-message">No results found.</p>'; } else { results.forEach(marker => createListItem(marker, resultsEl)); } });
-        document.getElementById('nav-favorites').addEventListener('click', () => { openPanel('favorites-panel', 'nav-favorites'); const listEl = document.getElementById('favorites-list'); listEl.innerHTML = ''; if (favorites.length === 0) { listEl.innerHTML = '<p class="empty-list-message">No favorites yet. Click the heart icon to add one.</p>'; } else { const favMarkers = favorites.map(uuid => stationMarkers.children.find(m => m.userData.uuid === uuid)).filter(Boolean); favMarkers.forEach(marker => createListItem(marker, listEl)); } });
-        
-        function populateBrowseCountries() { const countriesEl = document.getElementById('browse-panel-countries'); if (countriesEl.children.length > 0) return; const countries = [...new Set(stationMarkers.children.map(m => m.userData.country))].sort(); countries.forEach(country => { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${country}</h3>`; item.dataset.country = country; countriesEl.appendChild(item); }); }
-        document.getElementById('nav-browse').addEventListener('click', () => { openPanel('browse-panel', 'nav-browse'); populateBrowseCountries(); document.getElementById('browse-panel-stations').style.display = 'none'; document.getElementById('browse-panel-countries').style.display = 'block'; });
-        document.getElementById('browse-panel-countries').addEventListener('click', e => { const item = e.target.closest('.list-item'); if (!item) return; const country = item.dataset.country; const stationListEl = document.getElementById('browse-station-list'); stationListEl.innerHTML = ''; const stations = stationMarkers.children.filter(m => m.userData.country === country); stations.forEach(marker => createListItem(marker, stationListEl)); document.getElementById('browse-panel-countries').style.display = 'none'; document.getElementById('browse-panel-stations').style.display = 'block'; });
-        document.getElementById('browse-back-btn').addEventListener('click', () => { document.getElementById('browse-panel-countries').style.display = 'block'; document.getElementById('browse-panel-stations').style.display = 'none'; });
-        
-        function createListItem(marker, parentEl) { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<h3>${marker.userData.name}</h3><p>${marker.userData.city}, ${marker.userData.country}</p>`; item.addEventListener('click', () => { autoPlayDone = true; pointCameraAt(marker); hideAllPanels(); }); parentEl.appendChild(item); }
-
-        // --- 10. ANIMATION LOOP ---
-        function animate() {
-            requestAnimationFrame(animate);
-            if(isRotating) { camera.quaternion.slerp(targetRotation, 0.05); if(camera.quaternion.angleTo(targetRotation) < 0.01) { isRotating = false; } }
-            // Disable auto-selection if user starts interacting
-            if (controls.isDragging || isRotating) { autoPlayDone = true; }
-            controls.update();
-            checkSelection(); // This now respects the autoPlayDone flag
-            renderer.render(scene, camera);
-        }
-
-        // --- 11. INITIALIZATION & RESIZE ---
-        loadRadioStations();
-        requestUserLocation();
-        animate();
-        window.addEventListener('resize', () => { camera.aspect = globeContainer.clientWidth / globeContainer.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(globeContainer.clientWidth, globeContainer.clientHeight); });
-    </script>
-</body>
-</html>
+        function toggleFavorite() { if (!selectedStationMesh) return; const uuid = selectedStationMesh.userData.uuid; const idx = favorites.indexOf(uuid); if (idx > -1) favorites.splice(idx, 1); else favorites.pu
